@@ -4,6 +4,9 @@ import { Domain } from "./domain";
 
 var domain = new Domain();
 
+// TODO: callback function should take 'matcher results'
+// TODO: need a good non-regexp based matcher
+// TODO: dependent routes should support both arrays and maps
 domain.addRoute("/foo/1", () => {
      return { foo: "1" };
 });

@@ -22,7 +22,9 @@ export class Model<Data> implements ICachable {
     resolve(): Promise<Data> {
         this.domain.cache.set(this);
         if (this._fetchedDataPromise === undefined) {
-            this._fetchedDataPromise = Promise.attempt<Data>(() => { return <Promise<Data>>this._dataFetcher(this.id); });
+            this._fetchedDataPromise = Promise.attempt<Data>(() => { 
+                return <Promise<Data>>this._dataFetcher(this.id);
+            });
         }
         return this._fetchedDataPromise;
     }

@@ -55,7 +55,11 @@ export class Domain {
     
     addDependentRoute<Data>(route: MatcherPattern, mapDependents: (id: string) => string[], transform: (dependentModelData: any[]) => Data): void {
         this.addRoute(route, (id) => {
-            return Promise.all(mapDependents(id).map((id) => this.locate(id)).map((model) => model.resolve)).then(transform);
+            return Promise.all(
+                mapDependents(id)
+                .map((id) => this.locate(id))
+                .map((model) => model.resolve())
+            ).then(transform);
         });
     }
     
