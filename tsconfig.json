@@ -6,12 +6,9 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "outDir": "./build",
-        "watch": true
+        "watch": false
     },
     "files": [
-        "./src/cache.ts",
-        "./src/matcher.ts",
-        "./src/upstream.ts",
-        "./src/experience.ts"
+        "./src/bug_repro.ts"
     ]
 }
