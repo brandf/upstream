@@ -1,7 +1,7 @@
 export type MatcherPattern = string | IMatcher;
 
 export interface IMatcher {
-    match(pattern: string) : boolean;
+    match(pattern: string) : {};
 }
 
 export class RegExpMatcher implements IMatcher {
@@ -14,7 +14,7 @@ export class RegExpMatcher implements IMatcher {
         }
     }
     
-    match(pattern: string) : boolean {
-        return this._regex.test(pattern);
+    match(pattern: string) : {} {
+        return this._regex.exec(pattern);
     }
 }

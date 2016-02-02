@@ -4,21 +4,39 @@ import { Domain } from "./domain";
 
 var domain = new Domain();
 
-// TODO: callback function should take 'matcher results'
 // TODO: need a good non-regexp based matcher
-// TODO: dependent routes should support both arrays and maps
 domain.addRoute("/foo/1", () => {
-     return { foo: "1" };
+    return { baz: "1" };
 });
 
 domain.addRoute("/foo/2", () => {
-     return { foo: "2" };
+    return Promise.resolve({ baz: "2" });
 });
 
-domain.addDependentRoute("/bar/12", () => ["/foo/1", "/foo/2"], (deps) => {
-    return { bar1: deps[0].foo, bar2: deps[1].foo }; 
-});
+domain.addDependentRoute("/bar/1", () => {
+        return  {
+            foo1: "/foo/1", 
+            foo2: "/foo/2"
+        }
+    }, (deps) => {
+        return { 
+            baz1: deps["foo1"].baz, 
+            baz2: deps["foo2"].baz
+        }; 
+    }
+);
 
-domain.locate("/bar/12").resolve().then((bar) => {
+domain.addDependentRoute("/bar/2", () => {
+        return  Promise.resolve<{[name:string]:string}>({
+            bar1: "/bar/1"
+        });
+    }, (deps) => {
+        return Promise.resolve({ 
+            baz: deps["bar1"].baz1 + deps["bar1"].baz2
+        }); 
+    }
+);
+
+domain.locate("/bar/2").resolve().then((bar) => {
     console.dir(bar);
 });
