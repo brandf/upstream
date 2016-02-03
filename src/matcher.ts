@@ -1,4 +1,4 @@
-export type MatcherPattern = string | IMatcher;
+export type MatcherPattern = string | RegExp | IMatcher;
 
 export interface IMatcher {
     match(pattern: string) : {};
@@ -6,7 +6,7 @@ export interface IMatcher {
 
 export class RegExpMatcher implements IMatcher {
     private _regex: RegExp;
-    constructor(pattern: string|RegExp) {
+    constructor(pattern: string | RegExp) {
         if (typeof pattern === "string") {
             this._regex = new RegExp(pattern);
         } else {

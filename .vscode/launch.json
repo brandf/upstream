@@ -18,7 +18,7 @@
 			},
 			"externalConsole": false,
 			"sourceMaps": true,
-			"outDir": "./build"
+			"outDir": "./dist/node/"
 		},
 		{
 			"name": "Attach",

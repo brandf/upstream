@@ -2,14 +2,10 @@
   "name": "upstream",
   "version": "1.0.0",
   "description": "",
-  "main": "upstream.js",
-  "scripts": {
-    "build": "rm -rf build && tsc",
-    "prepublish": "typings install && npm run build"
-  },
   "author": "Brandon Furtwangler",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.1.5"
+    "bluebird": "^3.1.5",
+    "typescript": "^1.7.5"
   }
 }

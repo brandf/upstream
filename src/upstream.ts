@@ -4,7 +4,6 @@ import { Domain } from "./domain";
 
 var domain = new Domain();
 
-// TODO: need a good non-regexp based matcher
 domain.addRoute("/foo/1", () => {
     return { baz: "1" };
 });

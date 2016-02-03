@@ -19,13 +19,9 @@ function mapProps(obj: {[index:string]: any}, transform: (value: any) => any): {
 
 export class DomainConfig {
     constructor(
-        public cache?: ICache,
-        public matcherFromString?: (pattern: string) => IMatcher
+        public cache?: ICache
     ) {
-        this.cache = this.cache || 
-            new NullCache();
-        this.matcherFromString = matcherFromString || 
-            ((pattern: string) => { return new RegExpMatcher(pattern);});
+        this.cache = this.cache || new NullCache();
     }
 }
 
@@ -34,7 +30,6 @@ export class Domain {
         matcher: IMatcher, 
         handler: (matchResult: MatchResult, id: string) => Model<any> 
     }[] = [];
-    private _matcherFromString: (pattern: string) => IMatcher;
     private _cache: ICache;
     get cache(): ICache {
         return this._cache;
@@ -43,7 +38,6 @@ export class Domain {
     constructor(config?: DomainConfig) {
         config = config || new DomainConfig();
         this._cache             = config.cache;
-        this._matcherFromString = config.matcherFromString;
     }
     
     locate<Data>(id: string): Model<Data> {
@@ -102,10 +96,10 @@ export class Domain {
     }
     
     private _normalizeMatcher(pattern: MatcherPattern): IMatcher {
-        if (typeof pattern === "string") {
-            return this._matcherFromString(pattern);
+        if (typeof pattern === "string" || pattern instanceof RegExp) {
+            return new RegExpMatcher(pattern);
         } else {
-            return pattern;
+            return <IMatcher>pattern;
         }
     }
 }
