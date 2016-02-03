@@ -1,4 +1,4 @@
-/// <reference path="../typings/tsd.d.ts"/>
+/// <reference path="../typings/main.d.ts"/>
 import Promise = require("bluebird");
 import { Domain } from "./domain";
 

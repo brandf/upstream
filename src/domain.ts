@@ -1,4 +1,4 @@
-/// <reference path="../typings/tsd.d.ts"/>
+/// <reference path="../typings/main.d.ts"/>
 import Promise = require("bluebird");
 import { ICache, NullCache } from "./cache";
 import { IMatcher, RegExpMatcher, MatcherPattern } from "./matcher";
