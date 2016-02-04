@@ -38,7 +38,7 @@ export class AsyncCollectionBase<T> implements IAsyncCollection<T> {
     toArray(begin?: number, end?: number): Promise<T[]> { return Promise.resolve([]); }
 }
 
-export class AsyncCollection<T> extends AsyncCollectionBase<T> {
+export class AsyncArray<T> extends AsyncCollectionBase<T> {
     constructor(public wrapped: T[]) {
         super();
     }
