@@ -10,6 +10,7 @@
     },
     "files": [
         "./src/cache.ts",
+        "./src/collection.ts",
         "./src/matcher.ts",
         "./src/domain.ts",
         "./src/model.ts",
