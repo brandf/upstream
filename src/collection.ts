@@ -22,7 +22,11 @@ export class AsyncCollectionBase<T> implements IAsyncCollection<T> {
     }
     
     reduce(callback: (previous: T, current: T, index?: number) => T, initialValue?: T): Promise<T> {
-        return this.toArray().then((array) => array.reduce<T>(callback, initialValue));
+        if (arguments.length > 1) {
+            return this.toArray().then((array) => array.reduce(callback, initialValue));
+        } else {
+            return this.toArray().then((array) => array.reduce(callback));
+        }
     }
     
     slice(begin?: number, end?: number): IAsyncCollection<T> {
