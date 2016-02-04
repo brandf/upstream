@@ -4,7 +4,7 @@ import Promise = require("bluebird");
 export interface IAsyncCollection<T> {
     concat(other: IAsyncCollection<T>): IAsyncCollection<T>;
     map<R>(callback: (value: T, index?: number) => R): IAsyncCollection<R>;
-    reduce<R>(previous: R, current: T, index?: number): Promise<R>;
+    reduce(callback: (previous: T, current: T, index?: number) => T, initialValue?: T): Promise<T>;
     slice(begin?: number, end?: number): IAsyncCollection<T>;
     
     getLength(): Promise<number>;
@@ -21,7 +21,7 @@ export class AsyncCollectionBase<T> implements IAsyncCollection<T> {
         return new MapAsyncCollection<T, R>(this, callback);
     }
     
-    reduce(callback: (previous: T, current: T, index?: number) => T, initialValue: T): Promise<T> {
+    reduce(callback: (previous: T, current: T, index?: number) => T, initialValue?: T): Promise<T> {
         return this.toArray().then((array) => array.reduce<T>(callback, initialValue));
     }
     

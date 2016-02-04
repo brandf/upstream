@@ -1,6 +1,7 @@
 /// <reference path="../typings/main.d.ts"/>
 import Promise = require("bluebird");
 import { Domain } from "./domain";
+import { IAsyncCollection, AsyncCollection } from "./collection";
 
 var domain = new Domain();
 
@@ -31,11 +32,27 @@ domain.addDependentRoute("/bar/2", () => {
         });
     }, (deps) => {
         return Promise.resolve({ 
-            baz: deps["bar1"].baz1 + deps["bar1"].baz2
+            baz: new AsyncCollection<string>([deps["bar1"].baz1, deps["bar1"].baz2])
         }); 
     }
 );
 
-domain.locate("/bar/2").resolve().then((bar) => {
+domain.addDependentRoute("/bar/3", () => {
+        return  Promise.resolve<{[name:string]:string}>({
+            bar2: "/bar/2"
+        });
+    }, (deps) => {
+        return (<AsyncCollection<string>>(deps["bar2"].baz))
+            .map((s) => "baz=" + s)
+            .reduce((p, c) => p + ", " + c)
+            .then((baz) => {
+                return {
+                    baz: baz
+                };
+            });
+    }
+);
+
+domain.locate("/bar/3").resolve().then((bar) => {
     console.dir(bar);
 });
