@@ -5,15 +5,15 @@ import { IAsyncCollection, AsyncArray } from "./collection";
 
 var domain = new Domain();
 
-domain.addRoute("/foo/1", () => {
+domain.addRoute("/foo/1").get(() => {
     return { baz: "1" };
 });
 
-domain.addRoute("/foo/2", () => {
+domain.addRoute("/foo/2").get(() => {
     return Promise.resolve({ baz: "2" });
 });
 
-domain.addDependentRoute("/bar/1", () => {
+domain.addRoute("/bar/1").getDependent(() => {
         return  {
             foo1: "/foo/1", 
             foo2: "/foo/2"
@@ -26,24 +26,25 @@ domain.addDependentRoute("/bar/1", () => {
     }
 );
 
-domain.addDependentRoute("/bar/2", () => {
+domain.addRoute("/bar/2").getDependent(() => {
         return  Promise.resolve<{[name:string]:string}>({
             bar1: "/bar/1"
         });
     }, (deps) => {
         return Promise.resolve({ 
-            baz: new AsyncArray<string>([deps["bar1"].baz1, deps["bar1"].baz2])
+            baz: new AsyncArray<string>([deps["bar1"].baz1, deps["bar1"].baz2, "3"])
         }); 
     }
 );
 
-domain.addDependentRoute("/bar/3", () => {
+domain.addRoute("/bar/3").getDependent(() => {
         return  Promise.resolve<{[name:string]:string}>({
             bar2: "/bar/2"
         });
     }, (deps) => {
         return (<IAsyncCollection<string>>(deps["bar2"].baz))
-            .map((s) => "baz=" + s)
+            .map((s) => "val=" + s)
+            .slice(1)
             .reduce((p, c) => p + ", " + c)
             .then((baz) => {
                 return {
@@ -53,6 +54,6 @@ domain.addDependentRoute("/bar/3", () => {
     }
 );
 
-domain.locate("/bar/3").resolve().then((bar) => {
+domain.get("/bar/3").resolve().then((bar) => {
     console.dir(bar);
 });

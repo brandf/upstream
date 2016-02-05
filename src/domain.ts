@@ -7,7 +7,6 @@ import { Model } from "./model";
 type MaybePromise<Data>  = Data | Promise<Data>;
 type DependencyMap       = {[name: string]: string};
 type DependencyData      = {[name: string]: any};
-type MatchResult         = {};
 
 function mapProps(obj: {[index:string]: any}, transform: (value: any) => any): {[index:string]: any} {
     var result: {[index:string]: any} = {};
@@ -25,11 +24,57 @@ export class DomainConfig {
     }
 }
 
+export class Route {
+    constructor(public domain: Domain, public matcher: IMatcher) {}
+    
+    getHandler: (matchResult: MatchResult) => Model<any>
+    get<Data>(handler: (matchResult?: MatchResult) => MaybePromise<Data>): Route {
+        this.getHandler = (matchResult) => {
+            let id = matchResult.id;
+            let model = <Model<Data>>this.domain.cache.get(id);
+            if (model) {
+                return model;
+            }
+            
+            model = new Model<Data>(id, this.domain, () => {
+                return Promise.attempt<Data>(() => {
+                    return <Data>handler(matchResult);
+                }); 
+            });
+            
+            this.domain.cache.set(model);
+            return model;
+        }
+        return this;
+    }
+    
+    getDependent<Data>(
+        mapDependents: (matchResult?: MatchResult) => MaybePromise<DependencyMap>, 
+        transform: (dependencyData: DependencyData, matchResult?: MatchResult) => MaybePromise<Data>
+    ): Route {
+        return this.get((matchResult) => {
+            return Promise.attempt<DependencyMap>(() => {
+                return <DependencyMap>mapDependents(matchResult);
+            }).then((dependencyMap) => {
+                return Promise.props(
+                    mapProps(
+                        mapProps(dependencyMap, (id) => this.domain.get(id)),
+                        (model) => model.resolve()
+                    )
+                );
+            }).then((dependencyData) => {
+                return transform(dependencyData, matchResult);
+            });
+        });
+    }
+}
+
+export class MatchResult {
+    constructor(public route: Route, public id: string, public matchInfo: {}) {};
+}
+
 export class Domain {
-    private _routes: { 
-        matcher: IMatcher, 
-        handler: (matchResult: MatchResult, id: string) => Model<any> 
-    }[] = [];
+    private _routes: Route[] = [];
     private _cache: ICache;
     get cache(): ICache {
         return this._cache;
@@ -40,59 +85,27 @@ export class Domain {
         this._cache             = config.cache;
     }
     
-    locate<Data>(id: string): Model<Data> {
+    get<Data>(id: string): Model<Data> {
+        var matchResult = this.matchRoute(id);
+        if (matchResult && matchResult.route.getHandler) {
+            return matchResult.route.getHandler(matchResult);
+        }
+    }
+    
+    matchRoute(id: string): MatchResult {
         for(let i = 0; i < this._routes.length; ++i) {
             var route = this._routes[i];
-            var matchResult = route.matcher.match(id);
-            if (matchResult) {
-                return route.handler(matchResult, id);
+            var matchInfo = route.matcher.match(id);
+            if (matchInfo) {
+                return new MatchResult(route, id, matchInfo);
             }
         }
     }
     
-    addRoute<Data>(
-        pattern: MatcherPattern, 
-        handler: (matchResult?: MatchResult, id?: string) => MaybePromise<Data>
-    ) {
-        this._routes.push({
-            matcher: this._normalizeMatcher(pattern), 
-            handler: (matchResult, id) => {
-                var model = <Model<Data>>this.cache.get(id);
-                if (model) {
-                    return model;
-                }
-                
-                model = new Model<Data>(id, this, () => {
-                    return Promise.attempt<Data>(() => {
-                        return <Data>handler(matchResult, id);
-                    }); 
-                });
-                
-                this.cache.set(model);
-                return model;
-            }
-        });
-    }
-    
-    addDependentRoute<Data>(
-        pattern: MatcherPattern, 
-        mapDependents: (matchResult?: MatchResult, id?: string) => MaybePromise<DependencyMap>, 
-        transform: (dependencyData: DependencyData, matchResult?: MatchResult, id?: string) => MaybePromise<Data>
-    ): void {
-        this.addRoute(pattern, (matchResult, id) => {
-            return Promise.attempt<DependencyMap>(() => {
-                return <DependencyMap>mapDependents(matchResult, id);
-            }).then((dependencyMap) => {
-                return Promise.props(
-                    mapProps(
-                        mapProps(dependencyMap, (id) => this.locate(id)),
-                        (model) => model.resolve()
-                    )
-                );
-            }).then((dependencyData) => {
-                return transform(dependencyData, matchResult, id);
-            });
-        });
+    addRoute(pattern: MatcherPattern) {
+        var route = new Route(this, this._normalizeMatcher(pattern));
+        this._routes.push(route);
+        return route;
     }
     
     private _normalizeMatcher(pattern: MatcherPattern): IMatcher {
