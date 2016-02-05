@@ -12,6 +12,7 @@
         "./src/cache.ts",
         "./src/collection.ts",
         "./src/matcher.ts",
+        "./src/route.ts",
         "./src/domain.ts",
         "./src/model.ts",
         "./src/upstream.ts"
