@@ -1,7 +1,7 @@
 export type MatcherPattern = string | RegExp | IMatcher;
 
 export interface IMatcher {
-    match(pattern: string) : {};
+    match(pattern: string): {};
 }
 
 export class RegExpMatcher implements IMatcher {
@@ -13,8 +13,8 @@ export class RegExpMatcher implements IMatcher {
             this._regex = pattern;
         }
     }
-    
-    match(pattern: string) : {} {
+
+    match(pattern: string): {} {
         return this._regex.exec(pattern);
     }
 }

@@ -3,7 +3,7 @@ import Promise = require("bluebird");
 import { Domain } from "./domain";
 import { IAsyncCollection, AsyncArray } from "./collection";
 
-var domain = new Domain();
+let domain = new Domain();
 
 domain.addRoute("/foo/1").get(() => {
     return { baz: "1" };
@@ -15,30 +15,30 @@ domain.addRoute("/foo/2").get(() => {
 
 domain.addRoute("/bar/1").getDependent(() => {
         return  {
-            foo1: "/foo/1", 
+            foo1: "/foo/1",
             foo2: "/foo/2"
-        }
+        };
     }, (deps) => {
-        return { 
-            baz1: deps["foo1"].baz, 
+        return {
+            baz1: deps["foo1"].baz,
             baz2: deps["foo2"].baz
-        }; 
+        };
     }
 );
 
 domain.addRoute("/bar/2").getDependent(() => {
-        return  Promise.resolve<{[name:string]:string}>({
+        return  Promise.resolve<{[name: string]: string}>({
             bar1: "/bar/1"
         });
     }, (deps) => {
-        return Promise.resolve({ 
+        return Promise.resolve({
             baz: new AsyncArray<string>([deps["bar1"].baz1, deps["bar1"].baz2, "3"])
-        }); 
+        });
     }
 );
 
 domain.addRoute("/bar/3").getDependent(() => {
-        return  Promise.resolve<{[name:string]:string}>({
+        return  Promise.resolve<{[name: string]: string}>({
             bar2: "/bar/2"
         });
     }, (deps) => {

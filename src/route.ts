@@ -8,9 +8,9 @@ type MaybePromise<Data>  = Data | Promise<Data>;
 type DependencyMap       = {[name: string]: string};
 type DependencyData      = {[name: string]: any};
 
-function mapProps(obj: {[index:string]: any}, transform: (value: any) => any): {[index:string]: any} {
-    var result: {[index:string]: any} = {};
-    for (var prop in  obj) {
+function mapProps(obj: {[index: string]: any}, transform: (value: any) => any): {[index: string]: any} {
+    let result: {[index: string]: any} = {};
+    for (let prop in  obj) {
         result[prop] = transform(obj[prop]);
     }
     return result;
@@ -18,8 +18,8 @@ function mapProps(obj: {[index:string]: any}, transform: (value: any) => any): {
 
 export class Route {
     constructor(public domain: Domain, public matcher: IMatcher) {}
-    
-    getHandler: (matchResult: MatchResult) => Model<any>
+
+    getHandler: (matchResult: MatchResult) => Model<any>;
     get<Data>(handler: (matchResult?: MatchResult) => MaybePromise<Data>): Route {
         this.getHandler = (matchResult) => {
             let id = matchResult.id;
@@ -27,21 +27,21 @@ export class Route {
             if (model) {
                 return model;
             }
-            
+
             model = new Model<Data>(id, this.domain, () => {
                 return Promise.attempt<Data>(() => {
                     return <Data>handler(matchResult);
-                }); 
+                });
             });
-            
+
             this.domain.cache.set(model);
             return model;
-        }
+        };
         return this;
     }
-    
+
     getDependent<Data>(
-        mapDependents: (matchResult?: MatchResult) => MaybePromise<DependencyMap>, 
+        mapDependents: (matchResult?: MatchResult) => MaybePromise<DependencyMap>,
         transform: (dependencyData: DependencyData, matchResult?: MatchResult) => MaybePromise<Data>
     ): Route {
         return this.get((matchResult) => {
