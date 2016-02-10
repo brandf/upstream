@@ -42,18 +42,16 @@ domain.addRoute("/bar/3").getDependent(() => {
             bar2: "/bar/2"
         });
     }, (deps) => {
-        return (<IAsyncCollection<string>>(deps["bar2"].baz))
-            .map((s) => "val=" + s)
-            .slice(1)
-            .reduce((p, c) => p + ", " + c)
-            .then((baz) => {
-                return {
-                    baz: baz
-                };
-            });
+        return (<IAsyncCollection<string>>(deps["bar2"].baz)).map((s) => "val=" + s).slice(1).reduce((p, c) => p + ", " + c).then((baz) => {
+            return {
+                baz: baz
+            };
+        });
     }
 );
 
 domain.get("/bar/3").resolve().then((bar) => {
+    /* eslint-disable no-console */
     console.dir(bar);
+    /* eslint-enable no-console */
 });

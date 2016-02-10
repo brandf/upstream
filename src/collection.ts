@@ -35,7 +35,7 @@ export class AsyncCollectionBase<T> implements IAsyncCollection<T> {
 
     getLength(): Promise<number> { return Promise.resolve(0); }
 
-    toArray(begin?: number, end?: number): Promise<T[]> { return Promise.resolve([]); }
+    toArray(/*begin?: number, end?: number*/): Promise<T[]> { return Promise.resolve([]); }
 }
 
 export class AsyncArray<T> extends AsyncCollectionBase<T> {
@@ -107,10 +107,9 @@ class MapAsyncCollection<T1, T2> extends AsyncCollectionBase<T2> {
     }
 
     toArray(begin?: number, end?: number): Promise<T2[]> {
-        return this.wrapped.toArray(begin, end)
-            .then((array) => {
-                return array.map<T2>(this.callback);
-            });
+        return this.wrapped.toArray(begin, end).then((array) => {
+            return array.map<T2>(this.callback);
+        });
     }
 }
 

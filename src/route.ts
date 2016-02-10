@@ -10,7 +10,7 @@ type DependencyData      = {[name: string]: any};
 
 function mapProps(obj: {[index: string]: any}, transform: (value: any) => any): {[index: string]: any} {
     let result: {[index: string]: any} = {};
-    for (let prop in  obj) {
+    for (let prop in obj) {
         result[prop] = transform(obj[prop]);
     }
     return result;
@@ -62,5 +62,5 @@ export class Route {
 }
 
 export class MatchResult {
-    constructor(public route: Route, public id: string, public matchInfo: {}) {};
+    constructor(public route: Route, public id: string, public matchInfo: {}) {}
 }

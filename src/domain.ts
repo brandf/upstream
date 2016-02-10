@@ -33,8 +33,7 @@ export class Domain {
     }
 
     matchRoute(id: string): MatchResult {
-        for (let i = 0; i < this._routes.length; ++i) {
-            let route = this._routes[i];
+        for (const route of this._routes) {
             let matchInfo = route.matcher.match(id);
             if (matchInfo) {
                 return new MatchResult(route, id, matchInfo);

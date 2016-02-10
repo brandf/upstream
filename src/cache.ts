@@ -10,7 +10,7 @@ export interface ICache {
 }
 
 export class NullCache implements ICache {
-    get(id: string): ICachable { return undefined; }
-    set(cachable: ICachable): void {}
+    get(/*id: string*/): ICachable { return undefined; }
+    set(/*cachable: ICachable*/): void {}
     reset(): void {}
 }
