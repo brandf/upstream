@@ -15,6 +15,7 @@
         "./src/route.ts",
         "./src/domain.ts",
         "./src/model.ts",
-        "./src/upstream.ts"
+        "./src/upstream.ts",
+        "./test/cache-test.ts"
     ]
 }

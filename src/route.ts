@@ -42,8 +42,7 @@ export class Route {
 
     getDependent<Data>(
         mapDependents: (matchResult?: MatchResult) => MaybePromise<DependencyMap>,
-        transform: (dependencyData: DependencyData, matchResult?: MatchResult) => MaybePromise<Data>
-    ): Route {
+        transform: (dependencyData: DependencyData, matchResult?: MatchResult) => MaybePromise<Data>): Route {
         return this.get((matchResult) => {
             return Promise.attempt<DependencyMap>(() => {
                 return <DependencyMap>mapDependents(matchResult);
