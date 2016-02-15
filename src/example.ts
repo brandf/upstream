@@ -7,44 +7,43 @@ const dispatcher = new Dispatcher();
 const example = dispatcher.addDomain("example");
 
 example.addRoute("/foo/:id").get((match) => {
-    return { baz: match.params["id"] };
+    return { foo: Number(match.params["id"]) };
 });
 
-example.addRoute("/bar/1").getDependent(() => {
+example.addRoute("/bar/:id").getDependent((match) => {
         return  {
-            foo1: "example/foo/1",
-            foo2: "example/foo/2"
+            foo: "example/foo/" + match.params["id"],
         };
     }, (deps) => {
         return {
-            baz1: deps["foo1"].baz,
-            baz2: deps["foo2"].baz
+            bar: deps["foo"].foo * 2
         };
     }
 );
-example.addRoute("/bar/2").getDependent(() => {
+example.addRoute("/baz/:id").getDependent((match) => {
         return  {
-            bar1: "example/bar/1"
+            foo: "example/foo/" + match.params["id"],
+            bar: "example/bar/" + match.params["id"],
         };
     }, (deps) => {
         return Promise.resolve({
-            baz: new AsyncArray<string>([deps["bar1"].baz1, deps["bar1"].baz2, "3"])
+            baz: new AsyncArray<string>(["blah", deps["foo"].foo.toString(), deps["bar"].bar.toString()])
         });
     }
 );
-example.addRoute("/bar/3").getDependent(() => {
+example.addRoute("/buz/:id").getDependent((match) => {
         return  {
-            bar2: "example/bar/2"
+            baz: "example/baz/" + match.params["id"]
         };
     }, (deps) => {
-        return (<IAsyncCollection<string>>(deps["bar2"].baz)).map((s) => "val=" + s).slice(1).reduce((p, c) => p + ", " + c).then((baz) => {
+        return (<IAsyncCollection<string>>(deps["baz"].baz)).map((s) => "val=" + s).slice(1).reduce((p, c) => p + ", " + c).then((buz) => {
             return {
-                baz: baz
+                buz: buz
             };
         });
     }
 );
-dispatcher.get("example/bar/3").resolve().then((bar) => {
+dispatcher.get("example/buz/3").resolve().then((bar) => {
     /* eslint-disable no-console */
     console.dir(bar);
     /* eslint-enable no-console */
