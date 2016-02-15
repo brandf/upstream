@@ -1,20 +1,39 @@
-export type MatcherPattern = string | RegExp | IMatcher;
+/// <reference path="../typings/main.d.ts"/>
+import pathToRegexp = require("path-to-regexp");
+
+export type MatchParams = {[key: string]: string};
 
 export interface IMatcher {
-    match(pattern: string): {};
+    match(id: string): MatchParams;
 }
-
-export class RegExpMatcher implements IMatcher {
+export class PathMatcher implements IMatcher {
     private _regex: RegExp;
-    constructor(pattern: string | RegExp) {
-        if (typeof pattern === "string") {
-            this._regex = new RegExp(pattern);
-        } else {
-            this._regex = pattern;
+    private _keys: any[];
+    constructor(pattern: string) {
+        this._keys = [];
+        this._regex = pathToRegexp(pattern, this._keys);
+    }
+    match(id: string): MatchParams {
+        var result = this._regex.exec(id);
+	    if (result) {
+            var params: MatchParams = {};
+            for (var i = 0; i < this._keys.length; i++) {
+                params[this._keys[i].name] = result[i+1];
+            }
+            return params;
         }
     }
-
-    match(pattern: string): {} {
-        return this._regex.exec(pattern);
+}
+export class MatchResult<Owner> {
+    constructor(public owner: Owner, public id: string, public params: MatchParams) {}
+}
+export class DomainMatcher implements IMatcher {
+    constructor(public prefix: string) {}
+    match(id: string): MatchParams {
+        if (id.indexOf(this.prefix) === 0) {
+            return {
+                path: id.slice(this.prefix.length)
+            };
+        }
     }
 }

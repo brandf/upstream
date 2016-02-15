@@ -1,57 +1,37 @@
 /// <reference path="../typings/main.d.ts"/>
 import Promise = require("bluebird");
-import { ICache, NullCache } from "./cache";
-import { IMatcher, RegExpMatcher, MatcherPattern } from "./matcher";
+import { ICache } from "./cache";
+import { PathMatcher, MatchResult, IMatcher } from "./matcher";
 import { Model } from "./model";
-import { Route, MatchResult } from "./route";
-
-export class DomainConfig {
-    constructor(
-        public cache?: ICache
-    ) {
-        this.cache = this.cache || new NullCache();
-    }
-}
+import { Route } from "./route";
+import { Dispatcher } from "./dispatcher";
 
 export class Domain {
     private _routes: Route[] = [];
-    private _cache: ICache;
-    get cache(): ICache {
-        return this._cache;
-    }
-
-    constructor(config?: DomainConfig) {
-        config = config || new DomainConfig();
-        this._cache             = config.cache;
-    }
-
+    constructor(public dispatcher: Dispatcher, public matcher: IMatcher, public defaultCache: ICache) {}
     get<Data>(id: string): Model<Data> {
         let matchResult = this.matchRoute(id);
-        if (matchResult && matchResult.route.getHandler) {
-            return matchResult.route.getHandler(matchResult);
+        if (matchResult) {
+            if (matchResult.owner.getHandler) {
+                return matchResult.owner.getHandler(matchResult);
+            } else {
+                throw Error("Route matched, but no get handler found for: " + id);
+            }
+        } else {
+            throw Error("Domain matched, but no route matched for: " + id);
         }
     }
-
-    matchRoute(id: string): MatchResult {
+    matchRoute(id: string): MatchResult<Route> {
         for (const route of this._routes) {
-            let matchInfo = route.matcher.match(id);
-            if (matchInfo) {
-                return new MatchResult(route, id, matchInfo);
+            let matchParams = route.matcher.match(id);
+            if (matchParams) {
+                return new MatchResult(route, id, matchParams);
             }
         }
     }
-
-    addRoute(pattern: MatcherPattern) {
-        let route = new Route(this, this._normalizeMatcher(pattern));
+    addRoute(pattern: string, cache?: ICache) {
+        let route = new Route(this, new PathMatcher(pattern), cache || this.defaultCache);
         this._routes.push(route);
         return route;
-    }
-
-    private _normalizeMatcher(pattern: MatcherPattern): IMatcher {
-        if (typeof pattern === "string" || pattern instanceof RegExp) {
-            return new RegExpMatcher(pattern);
-        } else {
-            return <IMatcher>pattern;
-        }
     }
 }

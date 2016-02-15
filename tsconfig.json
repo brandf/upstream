@@ -14,8 +14,10 @@
         "./src/matcher.ts",
         "./src/route.ts",
         "./src/domain.ts",
+        "./src/dispatcher.ts",
         "./src/model.ts",
-        "./src/upstream.ts",
+        "./src/promise.ts",
+        "./src/example.ts",
         "./test/cache-test.ts"
     ]
 }

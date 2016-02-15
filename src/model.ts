@@ -1,26 +1,20 @@
 /// <reference path="../typings/main.d.ts"/>
 import Promise = require("bluebird");
+import { MaybePromise } from "./promise";
 import { ICachable } from "./cache";
-import { Domain } from "./domain";
+import { Route } from "./route";
 
 export class Model<Data> implements ICachable {
-    domain: Domain;
-    id: string;
     expiration: number;
-
-    private _dataFetcher: (id: string) => (Data|Promise<Data>);
+    private _dataFetcher: (id: string) => MaybePromise<Data>;
     private _fetchedDataPromise: Promise<Data>;
-
-    constructor(id: string, domain: Domain, dataFetcher: (id: string) => (Data|Promise<Data>)) {
-        this.id = id;
-        this.domain = domain;
-        this.expiration = 0;
-        this._dataFetcher = dataFetcher;
+    constructor(public route: Route, public id: string, dataFetcher: (id: string) => MaybePromise<Data>) {
+        this.expiration          = Number.MAX_VALUE;
+        this._dataFetcher        = dataFetcher;
         this._fetchedDataPromise = undefined;
     }
-
     resolve(): Promise<Data> {
-        this.domain.cache.set(this);
+        this.route.cache.set(this);
         if (this._fetchedDataPromise === undefined) {
             this._fetchedDataPromise = Promise.attempt<Data>(() => {
                 return <Promise<Data>>this._dataFetcher(this.id);

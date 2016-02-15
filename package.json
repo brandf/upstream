@@ -9,6 +9,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^5.2.0",
     "mocha": "^2.4.5",
+    "path-to-regexp": "^1.2.1",
     "typescript": "^1.7.5"
   }
 }

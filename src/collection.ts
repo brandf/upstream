@@ -6,21 +6,16 @@ export interface IAsyncCollection<T> {
     map<R>(callback: (value: T, index?: number) => R): IAsyncCollection<R>;
     reduce(callback: (previous: T, current: T, index?: number) => T, initialValue?: T): Promise<T>;
     slice(begin?: number, end?: number): IAsyncCollection<T>;
-
     getLength(): Promise<number>;
     toArray(begin?: number, end?: number): Promise<T[]>;
 }
-
-
 export class AsyncCollectionBase<T> implements IAsyncCollection<T> {
     concat(that: IAsyncCollection<T>): IAsyncCollection<T> {
         return new ConcatAsyncCollection<T>(this, that);
     }
-
     map<R>(callback: (value: T, index?: number) => R): IAsyncCollection<R> {
         return new MapAsyncCollection<T, R>(this, callback);
     }
-
     reduce(callback: (previous: T, current: T, index?: number) => T, initialValue?: T): Promise<T> {
         if (arguments.length > 1) {
             return this.toArray().then((array) => array.reduce(callback, initialValue));
@@ -28,31 +23,23 @@ export class AsyncCollectionBase<T> implements IAsyncCollection<T> {
             return this.toArray().then((array) => array.reduce(callback));
         }
     }
-
     slice(begin?: number, end?: number): IAsyncCollection<T> {
         return new SliceAsyncCollection<T>(this, begin, end);
     }
-
     getLength(): Promise<number> { return Promise.resolve(0); }
-
     toArray(/*begin?: number, end?: number*/): Promise<T[]> { return Promise.resolve([]); }
 }
-
 export class AsyncArray<T> extends AsyncCollectionBase<T> {
     constructor(public wrapped: T[]) {
         super();
     }
-
     getLength(): Promise<number> { return Promise.resolve(this.wrapped.length); }
-
     toArray(begin?: number, end?: number): Promise<T[]> { return Promise.resolve(this.wrapped.slice(begin, end)); }
 }
-
 class ConcatAsyncCollection<T> extends AsyncCollectionBase<T> {
     constructor(public first: IAsyncCollection<T>, public second: IAsyncCollection<T>) {
         super();
     }
-
     getLength(): Promise<number> {
         return Promise.all([
             this.first.getLength(),
@@ -61,7 +48,6 @@ class ConcatAsyncCollection<T> extends AsyncCollectionBase<T> {
             return lengths[0] + lengths[1];
         });
     }
-
     toArray(begin?: number, end?: number): Promise<T[]> {
         begin = begin || 0;
         if (begin === 0 && end === undefined) {
@@ -96,28 +82,23 @@ class ConcatAsyncCollection<T> extends AsyncCollectionBase<T> {
         });
     }
 }
-
 class MapAsyncCollection<T1, T2> extends AsyncCollectionBase<T2> {
     constructor(public wrapped: IAsyncCollection<T1>, public callback: (value: T1, index?: number) => T2) {
         super();
     }
-
     getLength(): Promise<number> {
         return this.wrapped.getLength();
     }
-
     toArray(begin?: number, end?: number): Promise<T2[]> {
         return this.wrapped.toArray(begin, end).then((array) => {
             return array.map<T2>(this.callback);
         });
     }
 }
-
 class SliceAsyncCollection<T> extends AsyncCollectionBase<T> {
     constructor(public wrapped: IAsyncCollection<T>, public begin?: number, public end?: number) {
         super();
     }
-
     getLength(): Promise<number> {
         return this.wrapped.getLength().then((length) => {
             let begin = this.begin || 0;
@@ -125,7 +106,6 @@ class SliceAsyncCollection<T> extends AsyncCollectionBase<T> {
             return Math.min(length, end - begin);
         });
     }
-
     toArray(begin?: number, end?: number): Promise<T[]> {
         begin = begin || 0;
         let thisBegin = this.begin || 0;
