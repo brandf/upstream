@@ -4,26 +4,36 @@ import { Dispatcher } from "./dispatcher";
 import { IAsyncCollection, AsyncArray } from "./collection";
 
 const dispatcher = new Dispatcher();
-const example = dispatcher.addDomain("example");
+const storage = dispatcher.addDomain("storage");
+const service = dispatcher.addDomain("service");
+const viewmodel = dispatcher.addDomain("viewmodel");
 
-example.addRoute("/foo/:id").get((match) => {
+storage.addRoute("/foo/:id").get((match) => {
     return { foo: Number(match.params["id"]) };
 });
 
-example.addRoute("/bar/:id").getDependent((match) => {
+service.addRoute("/foo/:id").get((match) => {
+    return Promise.resolve({ foo: Number(match.params["id"]) });
+});
+
+viewmodel.addRoute("/bar/:id").dependsOn((match) => {
+    return  {
+        foo: "storage/foo/" + match.params["id"],
+    };
+}).get((depData) => {
+    return {
+        bar: deps["foo"].foo * 2
+    };
+}).patch((patch) => {
+    return {
+        foo: { foo: patch.bar / 2 }
+    };
+});
+
+viewmodel.addRoute("/baz/:id").getDependent((match) => {
         return  {
-            foo: "example/foo/" + match.params["id"],
-        };
-    }, (deps) => {
-        return {
-            bar: deps["foo"].foo * 2
-        };
-    }
-);
-example.addRoute("/baz/:id").getDependent((match) => {
-        return  {
-            foo: "example/foo/" + match.params["id"],
-            bar: "example/bar/" + match.params["id"],
+            foo: "service/foo/" + match.params["id"],
+            bar: "viewmodel/bar/" + match.params["id"],
         };
     }, (deps) => {
         return Promise.resolve({
@@ -31,9 +41,9 @@ example.addRoute("/baz/:id").getDependent((match) => {
         });
     }
 );
-example.addRoute("/buz/:id").getDependent((match) => {
+viewmodel.addRoute("/buz/:id").getDependent((match) => {
         return  {
-            baz: "example/baz/" + match.params["id"]
+            baz: "viewmodel/baz/" + match.params["id"]
         };
     }, (deps) => {
         return (<IAsyncCollection<string>>(deps["baz"].baz)).map((s) => "val=" + s).slice(1).reduce((p, c) => p + ", " + c).then((buz) => {
@@ -43,8 +53,14 @@ example.addRoute("/buz/:id").getDependent((match) => {
         });
     }
 );
-dispatcher.get("example/buz/3").resolve().then((bar) => {
+dispatcher.get("viewmodel/buz/3").resolve().then((data) => {
     /* eslint-disable no-console */
-    console.dir(bar);
+    console.dir(data);
+    /* eslint-enable no-console */
+});
+
+dispatcher.locate("viewmodel/buz/5").get().then((data) => {
+    /* eslint-disable no-console */
+    console.dir(data);
     /* eslint-enable no-console */
 });

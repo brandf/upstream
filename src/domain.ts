@@ -29,7 +29,7 @@ export class Domain {
             }
         }
     }
-    addRoute(pattern: string, cache?: ICache) {
+    addRoute(pattern: string, cache?: ICache): Route {
         let route = new Route(this, new PathMatcher(pattern), cache || this.defaultCache);
         this._routes.push(route);
         return route;

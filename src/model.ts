@@ -13,7 +13,7 @@ export class Model<Data> implements ICachable {
         this._dataFetcher        = dataFetcher;
         this._fetchedDataPromise = undefined;
     }
-    resolve(): Promise<Data> {
+    get(): Promise<Data> {
         this.route.cache.set(this);
         if (this._fetchedDataPromise === undefined) {
             this._fetchedDataPromise = Promise.attempt<Data>(() => {
